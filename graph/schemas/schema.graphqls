@@ -41,17 +41,6 @@ input NewUser {
   password: String!
 }
 
-
-type TaskMutation {
-    createTask(input: NewTask!): Task! @auth
-    updateTask(input: UpdateTask!): Task! @auth
-    deleteTask(id:ID!): Boolean! @auth
-}
-type AuthOps {
-  login(email: String!, password: String!): Any! @goField(forceResolver: true)
-  register(input: NewUser!): Any! @goField(forceResolver: true)
-}
-
 type Query {
   user(id: ID!): User! @goField(forceResolver: true)
 
@@ -60,6 +49,10 @@ type Query {
 }
 
 type Mutation {
-  auth: AuthOps! @goField(forceResolver: true)
-  task: TaskMutation!
+  login(email: String!, password: String!): Any! @goField(forceResolver: true)
+  register(input: NewUser!): Any! @goField(forceResolver: true)
+
+  createTask(input: NewTask!): Task! @auth
+  updateTask(input: UpdateTask!): Task! @auth
+  deleteTask(id:ID!): Boolean! @auth
 }

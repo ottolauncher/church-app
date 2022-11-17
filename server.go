@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -14,6 +16,8 @@ import (
 	db "github.com/ottolauncher/church-app/graph/db/mongo"
 	"github.com/ottolauncher/church-app/graph/generated"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 const defaultPort = "8080"
@@ -58,10 +62,20 @@ func main() {
 		return nil
 	})
 
-	err := e.Start(":" + port)
+	h2s := &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          10 * time.Second,
+	}
+
+	s := http.Server{
+		Addr:    ":" + port,
+		Handler: h2c.NewHandler(e, h2s),
+	}
+
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	if err != nil {
-		log.Fatalln(err)
+	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal(err)
 	}
 
 }
