@@ -1,0 +1,63 @@
+directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+# new directive
+directive @auth on FIELD_DEFINITION
+
+scalar Any
+scalar Timestamp
+
+type Task {
+    id: ID!
+    title: String!
+    slug: String!
+    note: String!
+    completed: Boolean!
+    created_at: Timestamp!
+    updated_at: Timestamp!
+}
+
+input NewTask {
+    title: String!
+    note: String!
+}
+
+input UpdateTask {
+    id: ID!
+    title: String!
+    note: String!
+}
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String!
+}
+
+input NewUser {
+  name: String!
+  email: String!
+  password: String!
+}
+
+
+type TaskMutation {
+    createTask(input: NewTask!): Task! @auth
+    updateTask(input: UpdateTask!): Task! @auth
+    deleteTask(id:ID!): Boolean! @auth
+}
+type AuthOps {
+  login(email: String!, password: String!): Any! @goField(forceResolver: true)
+  register(input: NewUser!): Any! @goField(forceResolver: true)
+}
+
+type Query {
+  user(id: ID!): User! @goField(forceResolver: true)
+
+  # Add Protected Resource
+  protected: String! @goField(forceResolver: true) @auth
+}
+
+type Mutation {
+  auth: AuthOps! @goField(forceResolver: true)
+  task: TaskMutation!
+}
