@@ -18,15 +18,7 @@ type NewUser struct {
 	Password string `json:"password"`
 }
 
-type Task struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Slug      string `json:"slug"`
-	Note      string `json:"note"`
-	Completed bool   `json:"completed"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-}
+
 
 type TaskMutation struct {
 	CreateTask *Task `json:"createTask"`
@@ -38,11 +30,4 @@ type UpdateTask struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 	Note  string `json:"note"`
-}
-
-type User struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Phone string `json:"phone"`
 }

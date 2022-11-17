@@ -31,6 +31,8 @@ type User {
   name: String!
   email: String!
   phone: String!
+  created_at: Timestamp!
+  updated_at: Timestamp!
 }
 
 input NewUser {
