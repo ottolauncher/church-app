@@ -9,8 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+// Connection URI
+const uri = "mongodb://localhost:27017/churchApp"
+
 func Init() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI(""))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal(err)
 	}

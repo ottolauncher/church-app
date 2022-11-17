@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 
@@ -38,7 +37,7 @@ func main() {
 		dao = db.Init()
 	})
 
-	src := dao.Database("church-app")
+	src := dao.Database("churchApp")
 	defer func() {
 		if err := dao.Disconnect(context.TODO()); err != nil {
 			log.Fatal(err)
@@ -50,11 +49,14 @@ func main() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{UM: um, TM: tm}}))
 
-	e.GET("/query", func(c echo.Context) error {
+	e.POST("/query", func(c echo.Context) error {
+		srv.ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
+	e.GET("/playground", func(c echo.Context) error {
 		playground.Handler("GraphQL playground", "/query").ServeHTTP(c.Response(), c.Request())
 		return nil
 	})
-	http.Handle("/query", srv)
 
 	err := e.Start(":" + port)
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
