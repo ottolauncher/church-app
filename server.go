@@ -27,6 +27,10 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	}))
 	var (
 		once sync.Once
 		dao  *mongo.Client
@@ -64,8 +68,8 @@ func main() {
 	})
 
 	cfg := middleware.JWTConfig{
-		Claims:     &model.JWTCustomClaims,
-		SigningKey: []byte(model.SecretKey),
+		Claims:     &db.JWTCustomClaims{},
+		SigningKey: []byte(db.SecretKey),
 	}
 	r := e.Group("/query")
 	r.Use(middleware.JWTWithConfig(cfg))
