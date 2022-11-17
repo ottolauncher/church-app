@@ -63,6 +63,9 @@ func main() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
 
+	e.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, echo.Map{"message": "alive"})
+	})
 	e.POST("/login", um.Login)
 	e.POST("/register", um.Register)
 	e.GET("/playground", func(c echo.Context) error {
@@ -72,7 +75,7 @@ func main() {
 
 	cfg := middleware.JWTConfig{
 		Claims:     &db.JWTCustomClaims{},
-		SigningKey: []byte(db.SecretKey),
+		SigningKey: db.SecretKey,
 	}
 	r := e.Group("/query")
 	r.Use(middleware.JWTWithConfig(cfg))

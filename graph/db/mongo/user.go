@@ -29,7 +29,7 @@ type IUser interface {
 	Search(ctx context.Context, query string, filter map[string]interface{}, limit int, page int) ([]*model.User, error)
 }
 
-const SecretKey = "DOi4UCP0UQ6jmEbUvVWNCSJTGfM8/LE5UH4XRK3QW92kArVKnGxmwexgQUoXi6Bpido="
+var SecretKey []byte = []byte("DOi4UCP0UQ6jmEbUvVWNCSJTGfM8/LE5UH4XRK3QW92kArVKnGxmwexgQUoXi6Bpido=")
 
 type JWTCustomClaims struct {
 	Username string `json:"username"`
@@ -76,7 +76,7 @@ func (um *UserManager) Login(c echo.Context) error {
 			},
 		}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		t, err := token.SignedString([]byte(SecretKey))
+		t, err := token.SignedString(SecretKey)
 		if err != nil {
 			return err
 		}
