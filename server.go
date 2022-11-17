@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/ottolauncher/church-app/graph"
+	db "github.com/ottolauncher/church-app/graph/db/mongo"
 	"github.com/ottolauncher/church-app/graph/generated"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const defaultPort = "8080"
@@ -20,17 +24,42 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	var (
+		once sync.Once
+		dao  *mongo.Client
+	)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	once.Do(func() {
+		dao = db.Init()
+	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	src := dao.Database("church-app")
+	defer func() {
+		if err := dao.Disconnect(context.TODO()); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	um := db.NewUserManager(src)
+	tm := db.NewTaskManager(src)
+
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{UM: um, TM: tm}}))
+
+	e.GET("/query", func(c echo.Context) error {
+		playground.Handler("GraphQL playground", "/query").ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
 	http.Handle("/query", srv)
 
+	err := e.Start(":" + port)
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 }
