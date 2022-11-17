@@ -2,9 +2,13 @@
 
 package model
 
-type AuthOps struct {
-	Login    interface{} `json:"login"`
-	Register interface{} `json:"register"`
+type BaseModel interface {
+	IsBaseModel()
+	GetID() string
+	GetTitle() string
+	GetSlug() *string
+	GetCreatedAt() *int
+	GetUpdatedAt() *int
 }
 
 type NewTask struct {
@@ -16,14 +20,6 @@ type NewUser struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-
-
-type TaskMutation struct {
-	CreateTask *Task `json:"createTask"`
-	UpdateTask *Task `json:"updateTask"`
-	DeleteTask bool  `json:"deleteTask"`
 }
 
 type UpdateTask struct {

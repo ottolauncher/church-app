@@ -1,19 +1,25 @@
-directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-
 # new directive
 directive @auth on FIELD_DEFINITION
 
-scalar Any
-scalar Timestamp
+scalar Map
 
-type Task {
+interface BaseModel {
+  id: ID!
+  title: String!
+  slug: String
+  created_at: Int
+  updated_at: Int
+}
+
+
+type Task implements BaseModel {
     id: ID!
     title: String!
     slug: String!
     note: String!
     completed: Boolean!
-    created_at: Timestamp!
-    updated_at: Timestamp!
+    created_at: Int
+    updated_at: Int
 }
 
 input NewTask {
@@ -31,8 +37,8 @@ type User {
   name: String!
   email: String!
   phone: String!
-  created_at: Timestamp!
-  updated_at: Timestamp!
+  created_at: Int!
+  updated_at: Int!
 }
 
 input NewUser {
@@ -42,15 +48,16 @@ input NewUser {
 }
 
 type Query {
-  user(id: ID!): User! @goField(forceResolver: true)
-
-  # Add Protected Resource
-  protected: String! @goField(forceResolver: true) @auth
+  user(filter: Map!): User! 
+  users(filter: Map!, limit:Int=12, Page:Int=1):[User!]!
+  
+  task(filter: Map!): Task!
+  tasks(filter: Map!, limit:Int=12, Page:Int=1): [Task!]!
 }
 
 type Mutation {
-  login(email: String!, password: String!): Any! @goField(forceResolver: true)
-  register(input: NewUser!): Any! @goField(forceResolver: true)
+  login(email: String!, password: String!): String!
+  register(input: NewUser!): User! 
 
   createTask(input: NewTask!): Task! @auth
   updateTask(input: UpdateTask!): Task! @auth

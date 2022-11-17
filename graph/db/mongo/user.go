@@ -46,7 +46,7 @@ func (um *UserManager) Create(ctx context.Context, args model.User) (*model.User
 	if err != nil {
 		return nil, err
 	}
-	user.ID = res.InsertedID.(primitive.ObjectID)
+	user.ID = res.InsertedID.(primitive.ObjectID).Hex()
 	return &user, nil
 }
 
@@ -65,7 +65,7 @@ func (um *UserManager) Update(ctx context.Context, args model.User) (*model.User
 	if err != nil {
 		return nil, err
 	}
-	user.ID = res.UpsertedID.(primitive.ObjectID)
+	user.ID = res.UpsertedID.(primitive.ObjectID).Hex()
 	return &user, nil
 }
 

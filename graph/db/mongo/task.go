@@ -48,7 +48,7 @@ func (tm *TaskManager) Create(ctx context.Context, args model.Task) (*model.Task
 	if err != nil {
 		return nil, err
 	}
-	task.ID = res.InsertedID.(primitive.ObjectID)
+	task.ID = res.InsertedID.(primitive.ObjectID).Hex()
 	return &task, nil
 }
 
@@ -68,7 +68,7 @@ func (tm *TaskManager) Update(ctx context.Context, args model.Task) (*model.Task
 	if err != nil {
 		return nil, err
 	}
-	task.ID = res.UpsertedID.(primitive.ObjectID)
+	task.ID = res.UpsertedID.(primitive.ObjectID).Hex()
 	return &task, nil
 }
 
