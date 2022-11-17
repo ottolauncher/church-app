@@ -17,7 +17,7 @@ import (
 type ITask interface {
 	Create(ctx context.Context, args model.Task) (*model.Task, error)
 	Update(ctx context.Context, args model.Task) (*model.Task, error)
-	Delete(ctx context.Context, filter map[string]interface{}) (bool, error)
+	Delete(ctx context.Context, filter map[string]interface{}) error
 	Get(ctx context.Context, filter map[string]interface{}) (*model.Task, error)
 	All(ctx context.Context, filter map[string]interface{}, limit int, page int) ([]*model.Task, error)
 	Search(ctx context.Context, query string, filter map[string]interface{}, limit int, page int) ([]*model.Task, error)
@@ -72,20 +72,20 @@ func (tm *TaskManager) Update(ctx context.Context, args model.Task) (*model.Task
 	return &task, nil
 }
 
-func (tm *TaskManager) Delete(ctx context.Context, filter map[string]interface{}) (bool, error) {
+func (tm *TaskManager) Delete(ctx context.Context, filter map[string]interface{}) error {
 	l, cancel := context.WithTimeout(ctx, 350*time.Millisecond)
 	defer cancel()
 	if value, ok := filter["id"]; ok {
 		pk, err := primitive.ObjectIDFromHex(fmt.Sprintf("%s", value))
 		if err != nil {
-			return false, err
+			return err
 		}
 		_, err = tm.Col.DeleteOne(l, pk)
 		if err != nil {
-			return false, err
+			return err
 		}
 	}
-	return true, nil
+	return nil
 }
 
 func (tm *TaskManager) Get(ctx context.Context, filter map[string]interface{}) (*model.Task, error) {

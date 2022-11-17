@@ -34,6 +34,7 @@ input UpdateTask {
 }
 type User {
   id: ID!
+  username: String!
   name: String!
   email: String!
   phone: String!
@@ -42,11 +43,22 @@ type User {
 }
 
 input NewUser {
+  username: String!
   name: String!
   email: String!
-  password: String!
+  phone: String!
+  password1: String!
+  password2: String!
 }
 
+
+input UpdateUser {
+  name: String!
+  email: String!
+  phone: String!
+  oldPassword: String
+  newPassword: String
+}
 type Query {
   user(filter: Map!): User! 
   users(filter: Map!, limit:Int=12, Page:Int=1):[User!]!

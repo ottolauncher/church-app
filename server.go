@@ -15,6 +15,7 @@ import (
 	"github.com/ottolauncher/church-app/graph"
 	db "github.com/ottolauncher/church-app/graph/db/mongo"
 	"github.com/ottolauncher/church-app/graph/generated"
+	auth "github.com/ottolauncher/church-app/graph/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -26,7 +27,6 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
 	var (
 		once sync.Once
 		dao  *mongo.Client
@@ -51,14 +51,27 @@ func main() {
 	um := db.NewUserManager(src)
 	tm := db.NewTaskManager(src)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{UM: um, TM: tm}}))
+	e.Use(auth.AuthMiddleware(um))
 
-	e.POST("/query", func(c echo.Context) error {
-		srv.ServeHTTP(c.Response(), c.Request())
-		return nil
-	})
+	config := generated.Config{Resolvers: &graph.Resolver{UM: um, TM: tm}}
+
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
+
+	e.POST("/login", um.Login)
 	e.GET("/playground", func(c echo.Context) error {
 		playground.Handler("GraphQL playground", "/query").ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
+
+	cfg := middleware.JWTConfig{
+		Claims:     &model.JWTCustomClaims,
+		SigningKey: []byte(model.SecretKey),
+	}
+	r := e.Group("/query")
+	r.Use(middleware.JWTWithConfig(cfg))
+
+	r.POST("/query", func(c echo.Context) error {
+		srv.ServeHTTP(c.Response(), c.Request())
 		return nil
 	})
 

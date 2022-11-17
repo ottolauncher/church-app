@@ -17,13 +17,24 @@ type NewTask struct {
 }
 
 type NewUser struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username  string `json:"username"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	Password1 string `json:"password1"`
+	Password2 string `json:"password2"`
 }
 
 type UpdateTask struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 	Note  string `json:"note"`
+}
+
+type UpdateUser struct {
+	Name        string  `json:"name"`
+	Email       string  `json:"email"`
+	Phone       string  `json:"phone"`
+	OldPassword *string `json:"oldPassword"`
+	NewPassword *string `json:"newPassword"`
 }
