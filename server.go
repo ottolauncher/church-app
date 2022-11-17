@@ -15,7 +15,6 @@ import (
 	"github.com/ottolauncher/church-app/graph"
 	db "github.com/ottolauncher/church-app/graph/db/mongo"
 	"github.com/ottolauncher/church-app/graph/generated"
-	auth "github.com/ottolauncher/church-app/graph/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -27,6 +26,9 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "header:X-XSRF-TOKEN",
+	}))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
@@ -55,13 +57,14 @@ func main() {
 	um := db.NewUserManager(src)
 	tm := db.NewTaskManager(src)
 
-	e.Use(auth.AuthMiddleware(um))
+	// e.Use(auth.AuthMiddleware(um))
 
 	config := generated.Config{Resolvers: &graph.Resolver{UM: um, TM: tm}}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
 
 	e.POST("/login", um.Login)
+	e.POST("/register", um.Register)
 	e.GET("/playground", func(c echo.Context) error {
 		playground.Handler("GraphQL playground", "/query").ServeHTTP(c.Response(), c.Request())
 		return nil

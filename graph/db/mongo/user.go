@@ -20,6 +20,7 @@ import (
 
 type IUser interface {
 	Login(c echo.Context) error
+	Register(c echo.Context) error
 	Create(ctx context.Context, args model.NewUser) (*model.User, error)
 	Update(ctx context.Context, args model.UpdateUser) (*model.User, error)
 	Delete(ctx context.Context, filter map[string]interface{}) error
@@ -83,6 +84,40 @@ func (um *UserManager) Login(c echo.Context) error {
 	}
 	return errors.New("invalid credentials")
 }
+
+func (um *UserManager) Register(c echo.Context) error {
+	l, cancel := context.WithTimeout(c.Request().Context(), 350*time.Millisecond)
+	defer cancel()
+
+	username := c.FormValue("username")
+	name := c.FormValue("name")
+	email := c.FormValue("email")
+	phone := c.FormValue("phone")
+	password1 := c.FormValue("password1")
+	password2 := c.FormValue("password2")
+
+	if password1 == password2 {
+		now := time.Now().Unix()
+		pwd, _ := HashPassword(string(password2))
+		usr := model.User{
+			Name:      name,
+			Username:  username,
+			Email:     email,
+			Phone:     phone,
+			Password:  []byte(pwd),
+			CreatedAt: now,
+		}
+		_, err := um.Col.InsertOne(l, usr)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, echo.Map{"status": "OK!", "message": "login address: http://localhost:8080/login"})
+	}
+
+	return errors.New("invalid credentials")
+}
+
 func (um *UserManager) Create(ctx context.Context, args model.NewUser) (*model.User, error) {
 	l, cancel := context.WithTimeout(ctx, 350*time.Millisecond)
 	defer cancel()
